@@ -144,7 +144,7 @@ for root, dirs, files in os.walk(directory):
                            negative_prompt="monochrome, lowres, bad anatomy, worst quality, low quality",
                            num_inference_steps=50,
                           ).images[0]
-                image.save('nn.png')
+                 
  
                 #seg
                 inputs = processor(images=image, return_tensors="pt") 
