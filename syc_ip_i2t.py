@@ -86,11 +86,11 @@ model_id = "llava-hf/bakLlava-v1-hf"
 pipe_i2t = pipeline("image-to-text", model=model_id, model_kwargs={"quantization_config": quantization_config})
  
 
-controlnet_model_path = "lllyasviel/sd-controlnet-seg"
+controlnet_model_path = "lllyasviel/control_v11p_sd15_seg"
 controlnet = ControlNetModel.from_pretrained(controlnet_model_path, torch_dtype=torch.float16)
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
-    "stable-diffusion-v1-5/stable-diffusion-v1-5", controlnet=controlnet, torch_dtype=torch.float16)
+    "runwayml/stable-diffusion-v1-5", controlnet=controlnet, torch_dtype=torch.float16)
 pipe.to("cuda")
 pipe.load_ip_adapter("h94/IP-Adapter", subfolder="models", weight_name="ip-adapter_sd15.bin")
 
