@@ -1,0 +1,13 @@
+numpy
+matplotlib
+pillow
+appdirs
+pyquaternion
+coloredlogs
+tqdm
+typing
+requests
+tqdm
+
+[gui]
+PyQt5
