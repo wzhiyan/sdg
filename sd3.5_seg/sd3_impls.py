@@ -390,6 +390,7 @@ def sample_dpmpp_2m(model, x, sigmas, extra_args=None):
             denoised_d = (1 + 1 / (2 * r)) * denoised - (1 / (2 * r)) * old_denoised
             x = (sigma_fn(t_next) / sigma_fn(t)) * x - (-h).expm1() * denoised_d
         old_denoised = denoised
+        break  ####
  
     return x,outputatt,denoised_ss  ##outputatt_sss,
 
