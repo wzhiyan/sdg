@@ -924,8 +924,8 @@ def main():
               "controlnet_cond": controlnet_cond,
             }          
             noise_scaled = sd3.model.model_sampling.noise_scaling(
-               sigmas[0], noise, latent, inferencer.max_denoise(sigmas)
-            )
+               sigmas[-1], noise, latent, inferencer.max_denoise(sigmas)
+            ) ###sigmas[0] > sigmas[-1]
             sample_fn = getattr(sd3_impls, f"sample_{sampler}")
             
             denoiser = (
