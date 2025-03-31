@@ -946,7 +946,7 @@ def main():
             save_path =f"img00g/img_{step+1}.jpg"
             images_here.save(save_path)
             
-            diffusion_features = denoised_ss##[-1]
+            diffusion_features = outputatt_sss##[-1]
             #print('diffusion_features',diffusion_features.shape)
             
             print('sss',batch["instances"]["gt_classes"].shape)
