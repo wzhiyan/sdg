@@ -554,8 +554,8 @@ class seg_decorder(nn.Module):
         dim_feedforward= 2048):
         super().__init__()
         
-        self.jw =  nn.Conv2d(in_channels=25*16, out_channels=256, kernel_size=3, padding=1)
-        self.jw2 =  nn.Conv2d(in_channels=25*16, out_channels=256, kernel_size=3, padding=1)
+        self.jw =  nn.Conv2d(in_channels=24*16, out_channels=256, kernel_size=3, padding=1)
+        self.jw2 =  nn.Conv2d(in_channels=24*16, out_channels=256, kernel_size=3, padding=1)
         self.num_queries = num_queries
         # learnable query features
         self.query_feat = nn.Embedding(num_queries, hidden_dim)
@@ -712,7 +712,7 @@ class seg_decorder(nn.Module):
     def forward(self,diffusion_features):
         
         
-        x = diffusion_features[-25:]
+        x = diffusion_features ##[-25:]
         x_cat = torch.cat(x,dim=1)
         mask_features = x_cat.clone()
         #print('x_cat',x_cat.shape)
