@@ -562,8 +562,8 @@ class seg_decorder(nn.Module):
         # learnable query p.e.
         self.query_embed = nn.Embedding(num_queries, hidden_dim)
         
-        self.query_feat_mlp = nn.Linear(hidden_dim+768, hidden_dim, bias=False)
-        self.query_embed_mlp = nn.Linear(hidden_dim+768, hidden_dim, bias=False)
+        #self.query_feat_mlp = nn.Linear(hidden_dim+768, hidden_dim, bias=False)
+        #self.query_embed_mlp = nn.Linear(hidden_dim+768, hidden_dim, bias=False)
         
         
         self.decoder_norm = nn.LayerNorm(hidden_dim)
@@ -626,71 +626,7 @@ class seg_decorder(nn.Module):
             )
 
             
-            
-        low_feature_channel = 256
-        mid_feature_channel = 256
-        high_feature_channel = 256
-        highest_feature_channel=256
-        
-        self.low_feature_conv = nn.Sequential(
-            nn.Conv2d(1280*14+8*77, low_feature_channel, kernel_size=1, bias=False),
-
-        )
-        self.mid_feature_conv = nn.Sequential(
-            nn.Conv2d(16640+40*77, mid_feature_channel, kernel_size=1, bias=False),
-
-        )
-        self.mid_feature_mix_conv = SegBlock(
-                                in_channels=low_feature_channel+mid_feature_channel,
-                                out_channels=mask_dim,
-                                con_channels=128,
-                                which_conv=functools.partial(SNConv2d,
-                                    kernel_size=3, padding=1,
-                                    num_svs=1, num_itrs=1,
-                                    eps=1e-04),
-                                which_linear=functools.partial(SNLinear,
-                                    num_svs=1, num_itrs=1,
-                                    eps=1e-04),
-                                activation=nn.ReLU(inplace=True),
-                                upsample=False,
-                            )
-        self.high_feature_conv = nn.Sequential(
-            nn.Conv2d(9600+40*77, high_feature_channel, kernel_size=1, bias=False),
-        )
-        self.high_feature_mix_conv = SegBlock(
-                                in_channels=mask_dim+high_feature_channel,
-                                out_channels=mask_dim,
-                                con_channels=128,
-                                which_conv=functools.partial(SNConv2d,
-                                    kernel_size=3, padding=1,
-                                    num_svs=1, num_itrs=1,
-                                    eps=1e-04),
-                                which_linear=functools.partial(SNLinear,
-                                    num_svs=1, num_itrs=1,
-                                    eps=1e-04),
-                                activation=nn.ReLU(inplace=True),
-                                upsample=False,
-                            )
-        self.highest_feature_conv = nn.Sequential(
-            nn.Conv2d((640+320*6)*2+40*77, highest_feature_channel, kernel_size=1, bias=False),
-        )
-        self.highest_feature_mix_conv = SegBlock(
-                                in_channels=mask_dim+highest_feature_channel,
-                                out_channels=mask_dim,
-                                con_channels=128,
-                                which_conv=functools.partial(SNConv2d,
-                                    kernel_size=3, padding=1,
-                                    num_svs=1, num_itrs=1,
-                                    eps=1e-04),
-                                which_linear=functools.partial(SNLinear,
-                                    num_svs=1, num_itrs=1,
-                                    eps=1e-04),
-                                activation=nn.ReLU(inplace=True),
-                                upsample=False,
-                            )
-
-        
-
+    
     def forward_prediction_heads(self, output, mask_features, attn_mask_target_size):
         decoder_output = self.decoder_norm(output)
         decoder_output = decoder_output.transpose(0, 1)
@@ -712,11 +648,11 @@ class seg_decorder(nn.Module):
     def forward(self,diffusion_features):
         
         
-        x = diffusion_features ##[-25:]
-        x_cat = torch.cat(x,dim=1)
-        mask_features = x_cat.clone()
+        x = diffusion_features#[-25:]
+        #x_cat = torch.cat(x,dim=1)
+        mask_features = x.clone()
         #print('x_cat',x_cat.shape)
-        x_jw = self.jw (x_cat)
+        x_jw = self.jw (x)
         #print('x_jw',x_jw.shape)
         
         mask_features = self.jw2(mask_features)
