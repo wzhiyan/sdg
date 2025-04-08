@@ -183,6 +183,7 @@ class SD3:
                 control_model_ckpt=control_model_ckpt,
                 verbose=verbose,
             ).eval()
+ 
             #self.model = DataParallel(self.model).cuda() 
 
             load_into(f, self.model, "model.", "cuda", torch.float16)
@@ -227,7 +228,7 @@ PROMPT = "a photo of a cat"
 CFG_SCALE = 4.5
 # Different models want different step counts but most will be good at 50, albeit that's slow to run
 # sd3_medium is quite decent at 28 steps
-STEPS = 40
+STEPS = 50
 # Seed
 SEED = 23
 # SEEDTYPE = "fixed"
@@ -488,11 +489,12 @@ class SD3Inferencer:
             "cond_scale": cfg_scale,
             "controlnet_cond": controlnet_cond,
         }
- 
+        print('noise',noise.shape)
         noise_scaled = self.sd3.model.model_sampling.noise_scaling(
             sigmas[0], noise, latent, self.max_denoise(sigmas)
         )
- 
+        print('noise_scaled',noise_scaled.shape)
+        print('sigmas',sigmas.shape)
       
         sample_fn = getattr(sd3_impls, f"sample_{sampler}")
         #print('sample_fn',sample_fn) #<function sample_dpmpp_2m at 0x7fed8f9185e0>
@@ -501,7 +503,10 @@ class SD3Inferencer:
             if skip_layer_config.get("scale", 0) > 0
             else CFGDenoiser
         )
- 
+        print('denoiser',denoiser)
+        #print('self.sd3.model',self.sd3.model)
+        ddd=denoiser(self.sd3.model, steps, skip_layer_config)
+        print('ddd',ddd)
         latent,outputatt_sss,denoised_ss = sample_fn(
             denoiser(self.sd3.model, steps, skip_layer_config),
             noise_scaled,
@@ -510,7 +515,7 @@ class SD3Inferencer:
         )
  
         latent = SD3LatentFormat().process_out(latent)
- 
+        print('latent22',latent.shape)
         self.sd3.model = self.sd3.model.cpu()
         self.print("Sampling done")
         return latent
@@ -595,7 +600,7 @@ class SD3Inferencer:
         else:
             latent = self.get_empty_latent(1, width, height, seed, "cpu")
             latent = latent.cuda()
-   
+        print('latent',latent.shape)   
         if controlnet_cond_image:
             using_2b, control_type = False, 0
             if self.sd3.model.control_model is not None:
@@ -607,7 +612,7 @@ class SD3Inferencer:
         neg_cond = self.get_cond("")
         seed_num = None
         pbar = tqdm(enumerate(prompts), total=len(prompts), position=0, leave=True)
-        print('pbar',pbar)
+        #print('pbar',pbar)
         for i, prompt in pbar:
             if seed_type == "roll":
                 seed_num = seed if seed_num is None else seed_num + 1
@@ -616,7 +621,10 @@ class SD3Inferencer:
             else:  # fixed
                 seed_num = seed
             conditioning = self.get_cond(prompt)
- 
+            print('conditioning',conditioning[0].shape)
+            print('conditioning',conditioning[1].shape)
+            print('neg_cond',neg_cond[0].shape)
+            print('neg_cond',neg_cond[1].shape)
             #print('sampler',sampler)
             sampled_latent = self.do_sampling(
                 latent,
@@ -630,7 +638,7 @@ class SD3Inferencer:
                 denoise if init_image else 1.0,
                 skip_layer_config,
             )
- 
+            print('sampled_latent',sampled_latent.shape)
             
             img_out = sampled_latent[0,:,:,:].clone()
             
@@ -771,9 +779,11 @@ def main():
     else:
         return
     
-    
+    print('dataset',dataset)
+ 
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batch_size, shuffle=True)
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+ 
     
     print('***********************   begin   **********************************')
     save_dir = 'checkpoint'
@@ -784,27 +794,7 @@ def main():
     
     ckpt_dir = os.path.join(save_dir, opt.save_name)
     os.makedirs(ckpt_dir, exist_ok=True)
-    
-    # tokenizer = CLIPTokenizer.from_pretrained("./dataset/ckpts/imagenet/", subfolder="tokenizer")
-    
-    # #VAE
-    # vae = AutoencoderKL.from_pretrained("./dataset/ckpts/imagenet/", subfolder="vae")
-    # freeze_params(vae.parameters())
-    # vae=vae.to(device)
-    # vae.eval()
-    
-    # unet = UNet2D.from_pretrained("./dataset/ckpts/imagenet/", subfolder="unet")
-    # freeze_params(unet.parameters())
-    # unet=unet.to(device)
-    # unet.eval()
-    
-    # text_encoder = CLIPTextModel.from_pretrained("./dataset/ckpts/imagenet/text_encoder")
-    # freeze_params(text_encoder.parameters())
-    # text_encoder=text_encoder.to(device)
-    # text_encoder.eval()
-    
-    # segmentation decorder
-    # building criterion
+ 
     
     inferencer = SD3Inferencer()
     model=MODEL 
@@ -827,6 +817,7 @@ def main():
              )  
          sd3 =SD3(model, _shift, controlnet_ckpt, verbose, "cuda")
  
+    print('sd3',sd3)
     matcher = HungarianMatcher(
         cost_class=cfg.SEG_Decorder.CLASS_WEIGHT,
         cost_mask=cfg.SEG_Decorder.MASK_WEIGHT,
@@ -858,7 +849,7 @@ def main():
             [{"params": seg_model.parameters()},],
             lr=learning_rate
           )
-    #scheduler = StepLR(g_optim, step_size=350, gamma=0.1)
+    scheduler = StepLR(g_optim, step_size=350, gamma=0.1)
     
     
     start_code = None
@@ -886,14 +877,12 @@ def main():
             # clear all features and attention maps
             #clear_feature_dic()
             #controller.reset()
-            
-            
             image = batch["image"]
             instances = batch["instances"]
             prompts = batch["prompt"]
             class_name = batch["classes_str"]
             original_image = batch["original_image"]
-            
+            sem_mask = batch["sem_mask"]
             # [1, 19, 512, 512]
 #             print(instances["gt_masks"].shape)
 
@@ -901,7 +890,7 @@ def main():
             #print('image',image.shape)
             latent = inferencer._image_to_latent(image, WIDTH, HEIGHT)
             seed_num = torch.randint(0, 100000, (1,)).item()
-            print('prompts',prompts)
+            #print('prompts',prompts)
             prom=prompts[0]
             #print('prom',prom)
  
@@ -925,7 +914,7 @@ def main():
             }          
             noise_scaled = sd3.model.model_sampling.noise_scaling(
                sigmas[-1], noise, latent, inferencer.max_denoise(sigmas)
-            ) ###sigmas[0] > sigmas[-1]
+            )
             sample_fn = getattr(sd3_impls, f"sample_{sampler}")
             
             denoiser = (
@@ -943,34 +932,16 @@ def main():
             #sd3.model = sd3.model.cpu()
             
             images_here = inferencer.vae_decode(latent)
-            save_path =f"img00g/img_{step+1}.jpg"
-            images_here.save(save_path)
-            
-            diffusion_features = outputatt_sss##[-1]
+            # save_path =f"img00g/img_{step+1}.jpg"
+            # images_here.save(save_path)
+            #print('outputatt_sss',outputatt_sss.shape)
+            diffusion_features_ =outputatt_sss ##denoised_ss##[-1]
+            diffusion_features = diffusion_features_
+            diffusion_features_cat = torch.cat(diffusion_features,dim=1)
             #print('diffusion_features',diffusion_features.shape)
-            
-            print('sss',batch["instances"]["gt_classes"].shape)
-            #print('sss22',batch["instances"]["gt_masks"].shape)
-            
- 
-                           
-            
-            # if step%100 ==0:
-                # ptp_utils.save_images(images_here,out_put = (os.path.join(ckpt_dir,  'training/'+'viz_sample_{0:05d}'.format(step)+".png")))
-                # Image.fromarray(original_image.cpu().numpy()[0].astype(np.uint8)).save(os.path.join(ckpt_dir, 'training/'+ 'original_sample_{0:05d}'.format(step)+".png"))
-                
-                
-            # train segmentation
-            # diffusion_features=get_feature_dic()
-            # print('diffusion_features',diffusion_features['mid'][3].shape)  #  ['mid'][0]   ([1, 1280, 16, 16])   ['mid'][3] ([1, 2560, 16, 16])
-            # print('diffusion_features',diffusion_features['low'][0].shape)  # ['low'][0]([1, 2560, 8, 8])
-            
-            # print('controller',controller)
-            # print('prompts',prompts)
-            # print('tokenizer',tokenizer)
 
-
-            outputs=seg_model(diffusion_features)
+            outputs=seg_model(diffusion_features_cat)
+            #break
             #print('outputs',outputs)
             #print('outputs',outputs.shape)  #([1, 100, 20])
  
@@ -1034,7 +1005,7 @@ def main():
         torch.save(seg_model.state_dict(), os.path.join(ckpt_dir, 'latest_checkpoint.pth'))
         if j%10==0:
             torch.save(seg_model.state_dict(), os.path.join(ckpt_dir, 'checkpoint_'+str(j)+'.pth'))
-        #scheduler.step()
+        scheduler.step()
 
 
 if __name__ == "__main__":
