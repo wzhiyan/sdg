@@ -14,7 +14,7 @@ git clone https://github.com/facebookresearch/detectron2.git
 
 python -m pip install -e detectron2
 
-1 数据库
+2 数据库
 
 下载https://www.cityscapes-dataset.com/downloads/
 
