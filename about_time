@@ -1,6 +1,1 @@
-使用torch.profiler记录各模块运行时长  
-文件夹内文件为加入记录函数的主文件，  
-train_semantic_cityscapes2_time_dm.py为DatasetDM中训练文件（不可以直接放入现在文件中运行，1 环境稍有不同，需参照DatasetDM中的requirments配置环境 2models不同，需另外下载）   
-train_semantic_cityscapes2_time.py为修改后代码，可放入文件夹sd35_seg运行  
 
-log文件夹中是运行后保存的数据
