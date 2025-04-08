@@ -11,6 +11,7 @@
 python -m pip install cityscapesscripts 
 
 git clone https://github.com/facebookresearch/detectron2.git
+
 python -m pip install -e detectron2
 
 数据库
@@ -25,14 +26,14 @@ leftImg8bit_trainvaltest.zip  https://www.cityscapes-dataset.com/file-handling/?
 > data
 >> cityscapes
 >>> gtFine
->>>>> test
->>>>> train
->>>>> val
+>>>>> test  
+>>>>> train  
+>>>>> val  
 
 >>> leftImg8bit
->>>>> test
->>>>> train
->>>>> val
+>>>>> test  
+>>>>> train  
+>>>>> val  
  
 数据库预处理（转化训练ID，参考https://github.com/facebookresearch/Mask2Former/tree/main/datasets）
 
@@ -42,11 +43,11 @@ leftImg8bit_trainvaltest.zip  https://www.cityscapes-dataset.com/file-handling/?
 models下载（参考https://github.com/Stability-AI/sd3.5?tab=readme-ov-file#download）
 
 > models
->> clip_g.safetensors
->> clip_l.safetensors
->> sd3.5_medium.safetensors
->> t5xxl.safetensors
->> t5xxl_fp8_e4m3fn.safetensors
+>> clip_g.safetensors  
+>> clip_l.safetensors  
+>> sd3.5_medium.safetensors  
+>> t5xxl.safetensors  
+>> t5xxl_fp8_e4m3fn.safetensors  
  
 
 运行文件
