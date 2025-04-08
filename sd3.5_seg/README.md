@@ -35,12 +35,12 @@ leftImg8bit_trainvaltest.zip  https://www.cityscapes-dataset.com/file-handling/?
 >>>>> train  
 >>>>> val  
  
-数据库预处理（转化训练ID，参考https://github.com/facebookresearch/Mask2Former/tree/main/datasets）
+数据库预处理（转化训练ID，参考https://github.com/facebookresearch/Mask2Former/tree/main/datasets ）
 
 ```CITYSCAPES_DATASET=/path/to/abovementioned/cityscapes python cityscapesscripts/preparation/createTrainIdLabelImgs.py```
 
 
-3 models下载（参考https://github.com/Stability-AI/sd3.5?tab=readme-ov-file#download）
+3 models下载（参考https://github.com/Stability-AI/sd3.5?tab=readme-ov-file#download ）
 
 > models
 >> clip_g.safetensors  
