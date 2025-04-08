@@ -1,4 +1,4 @@
-环境配置
+1 环境配置
 
 ```conda create -n name python==3.10.8```
 
@@ -14,7 +14,7 @@ git clone https://github.com/facebookresearch/detectron2.git
 
 python -m pip install -e detectron2
 
-数据库
+1 数据库
 
 下载https://www.cityscapes-dataset.com/downloads/
 
@@ -40,7 +40,7 @@ leftImg8bit_trainvaltest.zip  https://www.cityscapes-dataset.com/file-handling/?
 ```CITYSCAPES_DATASET=/path/to/abovementioned/cityscapes python cityscapesscripts/preparation/createTrainIdLabelImgs.py```
 
 
-models下载（参考https://github.com/Stability-AI/sd3.5?tab=readme-ov-file#download）
+3 models下载（参考https://github.com/Stability-AI/sd3.5?tab=readme-ov-file#download）
 
 > models
 >> clip_g.safetensors  
@@ -50,12 +50,13 @@ models下载（参考https://github.com/Stability-AI/sd3.5?tab=readme-ov-file#do
 >> t5xxl_fp8_e4m3fn.safetensors  
  
 
-运行文件
-```train_semantic_Cityscapes2.sh```
+4 运行文件
+```sh train_semantic_Cityscapes2.sh```
 
 
 
-参考sd3.5 + DatasetDM
+5 参考
+sd3.5 + DatasetDM  
 https://github.com/Stability-AI/sd3.5
 
 https://github.com/showlab/DatasetDM
